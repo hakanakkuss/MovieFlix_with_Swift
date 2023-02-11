@@ -34,13 +34,7 @@ class MainTabBarViewController: UITabBarController {
         vc2.title = "Coming Soon"
         vc3.title = "Top Search"
         vc4.title = "Downloads"
-        
-        
-        
-        
-        
+
     }
-
-
 }
 

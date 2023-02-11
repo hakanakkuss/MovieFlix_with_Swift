@@ -30,6 +30,7 @@ class HeroHeaderUIView: UIView {
         return imageView
     }()
     
+    
     private func addGradient() {
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [

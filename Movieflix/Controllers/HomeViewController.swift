@@ -7,6 +7,15 @@
 
 import UIKit
 
+
+enum Sections: Int {
+    case TrendingMovies = 0
+    case Popular = 1
+    case TrendingTv = 2
+    case UpcomingMovies = 3
+    case TopRated = 4
+}
+
 class HomeViewController: UIViewController {
     
     let sectionTitles : [String] = ["Trending Movies", "Popular", "Trending TV", "Upcoming Movies", "Top Rated"]
@@ -23,14 +32,14 @@ class HomeViewController: UIViewController {
         view.addSubview(homeFeedTable)
 
         view.backgroundColor = .systemBackground
-        
-        
-        
+
         homeFeedTable.delegate = self
         homeFeedTable.dataSource = self
+        
         configureNavBar()
         let headerView = HeroHeaderUIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 450))
         homeFeedTable.tableHeaderView = headerView
+        
         
     }
     
@@ -47,7 +56,7 @@ class HomeViewController: UIViewController {
             let logoBarButtonItem = UIBarButtonItem(customView: containerView)
             navigationItem.leftBarButtonItem = logoBarButtonItem
             
-            // right bar buttons
+            /// right bar buttons
             navigationItem.rightBarButtonItems = [
                 UIBarButtonItem(image: UIImage(systemName: "person"), style: .done, target: self, action: nil),
                 UIBarButtonItem(image: UIImage(systemName: "play.rectangle"), style: .done, target: self, action: nil)
@@ -61,6 +70,7 @@ class HomeViewController: UIViewController {
         super.viewDidLayoutSubviews()
         homeFeedTable.frame = view.bounds
     }
+    
 }
 
 extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
@@ -87,6 +97,16 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         return sectionTitles[section]
     }
     
+    ///Sectionların başlıkları ile ilgili ayarlamaları sağlayan fonksiyon
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else {return}
+        header.textLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        header.textLabel?.frame = CGRect(x: header.bounds.origin.x, y: header.bounds.origin.y, width: 100, height: header.bounds.height)
+        header.textLabel?.textColor = .white
+        ///Alttaki yorum satırı section isimlerinin baş harflerini büyük yapmaya geri kalanını küçük yapmaya yarar. Extensionstan gelir.
+        //        header.textLabel?.text = header.textLabel?.text?.capitalizeFirstLetter()
+        
+    }
     
     ///Scroll ettiğinde nav bar'ın görünürlüğünü kaldırıyor.
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -95,10 +115,62 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         
         navigationController?.navigationBar.transform = .init(translationX: 0, y: min(0, -offset))
     }
-   
+    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CollectionViewTableViewCell.identifier, for: indexPath) as? CollectionViewTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        switch indexPath.section {
+        case Sections.TrendingMovies.rawValue:
+            
+            APICaller.shared.getTrendingMovies { result in
+                switch result {
+                case .success(let titles):
+                    cell.configure(with: titles)
+                case.failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        case Sections.TrendingTv.rawValue:
+            APICaller.shared.getTrendingTvData { result in
+                switch result {
+                case .success(let titles):
+                    cell.configure(with: titles)
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        case Sections.Popular.rawValue:
+            APICaller.shared.getPopularData { result in
+                switch result {
+                case .success(let titles):
+                    cell.configure(with: titles)
+                case.failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        case Sections.UpcomingMovies.rawValue:
+            APICaller.shared.getUpcomingData { result in
+                switch result {
+                case .success(let titles):
+                    cell.configure(with: titles)
+                case.failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        case Sections.TopRated.rawValue:
+            APICaller.shared.getRatedData { result in
+                switch result {
+                case .success(let titles):
+                    cell.configure(with: titles)
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+      
+        default:
             return UITableViewCell()
         }
         return cell
