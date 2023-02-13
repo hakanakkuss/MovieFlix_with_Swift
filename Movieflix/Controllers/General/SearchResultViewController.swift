@@ -7,9 +7,14 @@
 
 import UIKit
 
+protocol SearchResultViewControllerDelegate: AnyObject {
+    func searchResultViewControllerDidTapItem(_ viewModel: TitlePreviewViewModel)
+}
+
 class SearchResultViewController: UIViewController {
     
     public var titles: [Title] = [Title]()
+    public weak var delegate: SearchResultViewControllerDelegate?
 
     
     public let searchResultCollectionView: UICollectionView = {
@@ -38,6 +43,7 @@ class SearchResultViewController: UIViewController {
         searchResultCollectionView.dataSource = self
         
     }
+    
 }
 
 extension SearchResultViewController: UICollectionViewDelegate,UICollectionViewDataSource {
@@ -52,4 +58,26 @@ extension SearchResultViewController: UICollectionViewDelegate,UICollectionViewD
         cell.backgroundColor = .blue
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        
+        
+        let title = titles[indexPath.row]
+        let titleName = title.original_title ?? ""
+        
+        APICaller.shared.getMovies(with: titleName) { result in
+            switch result {
+            case .success(let videoElement):
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.searchResultViewControllerDidTapItem(TitlePreviewViewModel(title: titleName, youtubeView: videoElement , titleOverview: title.overview ?? ""))
+
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    
 }
